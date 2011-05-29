@@ -9,6 +9,8 @@ import javax.ejb.FinderException;
 import javax.swing.event.ChangeListener;
 import javax.transaction.TransactionManager;
 
+import org.springframework.util.StringUtils;
+
 import com.idega.business.IBOLookup;
 import com.idega.event.IWActionListener;
 import com.idega.event.IWPresentationState;
@@ -313,28 +315,28 @@ public class CreateUser extends StyledIWAdminWindow {
 		this.ssn = iwc.getParameter(ssnFieldParameterName);
 		this.fullName = iwc.getParameter(fullNameFieldParameterName);
 		this.primaryGroup = iwc.getParameter(primaryGroupFieldParameterName);
-		if (this.primaryGroup == null || this.primaryGroup.equals("")) {
-			this.primaryGroup = "";
+		if (StringUtils.hasLength(primaryGroup)) {
+			primaryGroup = primaryGroup.substring(primaryGroup.lastIndexOf("_") + 1);
 		}
 		else {
-			this.primaryGroup = this.primaryGroup.substring(this.primaryGroup.lastIndexOf("_") + 1);
+			primaryGroup = "";
 		}
-		if (this.ssn == null || this.ssn.equals("") || this.fullName == null || this.fullName.equals("")) {
-			this.formNotComplete = true;
+		if (!StringUtils.hasLength(ssn) || !StringUtils.hasLength(fullName)) {
+			formNotComplete = true;
 		}
 		if (submit != null) {
 			// is addressed if the okButton is pressed and the user has:
 			// 1. not entered anything in the form,
 			// 2. entered only the name
 			// 3. entered only the social security number
-			if (submit.equals("ok") && this.formNotComplete) {
+			if (submit.equals("ok") && formNotComplete) {
 				// is addressed if both name and social security number are
 				// empty
-				if ((this.ssn == null || this.ssn.equals("")) && (this.fullName == null || this.fullName.equals(""))) {
+				if (!StringUtils.hasLength(ssn) && !StringUtils.hasLength(fullName)) {
 					setAlertOnLoad(iwrb.getLocalizedString("new_user.ssn_or_fullName_required",
 							"Personal ID or name is required"));
 				}
-				else if (this.ssn == null || this.ssn.equals("") && (this.fullName != null || !this.fullName.equals(""))) {
+				else if (!StringUtils.hasLength(ssn) && StringUtils.hasLength(fullName)) {
 					// is addressed if only the name is entered
 					this.inputTable.add(iwrb.getLocalizedString("new_user.ssn_warning",
 							"You have selected to create a user with no Personal ID, do you want to continue?"), 1, 4);
@@ -342,7 +344,8 @@ public class CreateUser extends StyledIWAdminWindow {
 					this.formNotComplete = false;
 					this.buttonTable.remove(this.okButton);
 					this.buttonTable.add(this.continueButton, 1, 1);
-					if (this.primaryGroup != null || !this.primaryGroup.equals("")) {
+					if (StringUtils.hasLength(primaryGroup)) {
+						// TODO: add an integer validator or alert.
 						Integer primaryGroupId = new Integer(this.primaryGroup);
 						this.primaryGroupField.setSelectedGroup(this.primaryGroup, getGroupBusiness(iwc).getGroupByGroupID(
 								primaryGroupId.intValue()).getName());
@@ -350,7 +353,7 @@ public class CreateUser extends StyledIWAdminWindow {
 				}
 				// is addressed if the only the social security number is
 				// entered
-				else if ((this.ssn != null || !this.ssn.equals("")) && (this.fullName == null || this.fullName.equals(""))) {
+				else if (StringUtils.hasLength(ssn) && !StringUtils.hasLength(fullName)) {
 					try {
 						// todo fill in the name field if found by ssn
 						User user = getUserBusiness(iwc).getUser(this.ssn);
@@ -371,7 +374,8 @@ public class CreateUser extends StyledIWAdminWindow {
 					this.formNotComplete = false;
 					this.buttonTable.remove(this.okButton);
 					this.buttonTable.add(this.continueButton, 1, 1);
-					if (this.primaryGroup != null || !this.primaryGroup.equals("")) {
+					if (StringUtils.hasLength(primaryGroup)) {
+						// TODO: add an integer validator or alert.
 						Integer primaryGroupId = new Integer(this.primaryGroup);
 						this.primaryGroupField.setSelectedGroup(this.primaryGroup, getGroupBusiness(iwc).getGroupByGroupID(
 								primaryGroupId.intValue()).getName());
